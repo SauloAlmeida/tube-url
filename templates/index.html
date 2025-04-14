@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tube Url</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #ff0000;
+        }
+        form {
+            margin-top: 20px;
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+        .flash-messages {
+            margin: 20px 0;
+            color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tube Url</h1>
+        <p>Enter a YouTube video URL to get the direct video playback link in a new tab</p>
+        
+        {% if get_flashed_messages() %}
+        <div class="flash-messages">
+            {% for message in get_flashed_messages() %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form action="{{ url_for('extract') }}" method="post" id="youtube-form">
+            <input type="text" name="youtube_url" id="youtube-input" placeholder="https://www.youtube.com/watch?v=..." required>
+            <br>
+            <button type="submit">Extract Video URL</button>
+        </form>
+    </div>
+    
+    {% if video_url %}
+    <!-- Hidden input to store the video URL -->
+    <input type="hidden" id="video-url" value="{{ video_url }}">
+    {% endif %}
+    
+    <script>
+        // Handle form submission
+        document.getElementById('youtube-form').addEventListener('submit', function() {
+            // Store that we submitted the form
+            localStorage.setItem('formSubmitted', 'true');
+        });
+        
+        // On page load
+        window.onload = function() {
+            // Check if we have a video URL to open
+            var videoUrlElement = document.getElementById('video-url');
+            if (videoUrlElement) {
+                // Open the URL in a new tab
+                window.open(videoUrlElement.value, '_blank');
+                // Clear the input field
+                document.getElementById('youtube-input').value = '';
+            } else if (localStorage.getItem('formSubmitted') === 'true') {
+                // If we're returning from a form submission without a video URL
+                document.getElementById('youtube-input').value = '';
+                localStorage.removeItem('formSubmitted');
+            }
+        };
+    </script>
+</body>
+</html>
