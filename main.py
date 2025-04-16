@@ -7,26 +7,23 @@ app.secret_key = 'tube_url_secret_key'
 def get_videoplayback_url(youtube_url):
     try:
         yt = pytubefix.YouTube(youtube_url)
-        
-        # First try to get 1080p or higher resolution
-        high_res_streams = yt.streams.filter(res="1080p").order_by('bitrate').desc()
-        
-        if high_res_streams:
-            # Found 1080p stream
-            best_stream = high_res_streams[0]
-            print(f"Found 1080p stream: {best_stream}")
+
+        progressive_streams = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc()
+
+        if progressive_streams:
+            best_stream = progressive_streams[0]
+            print(f"Using progressive stream with resolution: {best_stream.resolution}")
             return best_stream.url
-            
-        # If no 1080p, try to get the highest resolution available
-        all_streams = yt.streams.order_by('resolution').desc()
-        
-        if all_streams:
-            best_stream = all_streams[0]
-            print(f"Using highest available resolution: {best_stream.resolution}")
-            return best_stream.url
-            
+
+        video_only_streams = yt.streams.filter(adaptive=True, only_video=True).order_by('resolution').desc()
+
+        if video_only_streams:
+            best_video_stream = video_only_streams[0]
+            print(f"Found high-res video-only stream (no audio): {best_video_stream.resolution}")
+            return best_video_stream.url
+
         return None
-    
+
     except Exception as e:
         print(f"Error processing video: {e}")
         return None
